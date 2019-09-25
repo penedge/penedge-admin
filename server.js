@@ -4,9 +4,9 @@ const next = require('next');
 const dev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 80;
 // using in development
-const app = next({ dev });
+//const app = next({ dev });
 // using in production
-//const app = next({ dir: '.' , dev: false, staticMarkup: false, quiet: false, conf: null, chunk:null, cache: true});
+const app = next({ dir: '.' , dev: false, staticMarkup: false, quiet: false, conf: null, chunk:null, cache: true});
 const handle = app.getRequestHandler();
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -17,7 +17,6 @@ mongoose.set('useCreateIndex', true);
 //const connectServer = 'mongodb://penedgeAdmin:penedge1234@mongo:27017/penedgeDB1234';
 // using in testing code
 const connectServer = 'mongodb://happyudong:4234dong@localhost:27017/penedgeDB1234';
-
 mongoose.connect(connectServer, { useNewUrlParser: true });
 const multer = require('multer');
 const jwt = require('jsonwebtoken');

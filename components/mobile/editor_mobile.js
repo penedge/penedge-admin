@@ -10,7 +10,7 @@ export default class Editor_mobile extends PureComponent {
             title: [],
             cover: [],
             content: [],
-            preview: [],
+            preview: '/static/images/bg/uploadIcon.svg',
             loading: false,
             multiFile: [],
             tags: [
@@ -161,7 +161,7 @@ export default class Editor_mobile extends PureComponent {
                 <form onSubmit={this.saved}>
                     <input className="storyNameMobile" placeholder="Story Title : " onChange={this.storyName} />
                     <br />
-                    <div className="Cover_mobile" style={{ backgroundImage: `url(${this.state.preview})` }}>
+                    <div className="Cover_mobile" style={{ backgroundImage: `url(${this.state.preview})`,cursor:'pointer' }}>
                         <input type="file" onChange={this.coverUpload.bind(this)} />
                     </div>
                     <textarea className="content_mobile" placeholder="Add your story..." onChange={this.detail}></textarea>
@@ -208,7 +208,7 @@ export default class Editor_mobile extends PureComponent {
                         .Cover_mobile {
                             width: 100%;
                             height: 220px;
-                            background-color: red;
+                            background-color: #fff;
                             overflow: hidden;
                             background-size: cover;
                             background-repeat: no-repeat;

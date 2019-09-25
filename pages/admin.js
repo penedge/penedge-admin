@@ -38,9 +38,9 @@ export default class Index extends PureComponent {
           <title>Penedge Admin</title>
           <link type="text/css" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/3.20.3/antd.min.css"/>
         </Head>
-        <Layout>
+        <div className="custom_background">
           <Content className="loginContainer">
-            <Col span={10} className="register_form">
+            <Col md={{span:8}} className="register_form">
               <Card>
                 <div className="brandLogo">
                   <img src={`/static/logo/penedgeLogo.png`} />
@@ -60,10 +60,18 @@ export default class Index extends PureComponent {
               </Card>
             </Col>
           </Content>
-        </Layout>
+        </div>
         <style>{`
+          .custom_background {
+            width: 100%;
+            background-image: url('../static/images/bg/loginBg.jpg');
+            height: 100%;
+            background-size: cover;
+            position: fixed;
+          }
           .loginContainer {
             padding: 50px;
+            padding-top:100px;
           }
           .register_form {
             float: none;
@@ -87,6 +95,22 @@ export default class Index extends PureComponent {
           .usernameLogin, .passwordLogin {
             width: 100%;
             margin-bottom: 20px;
+          }
+          @media screen and (min-width: 320px) and (max-width: 420px) {
+            body {
+              background-color: #fff !important;
+            }
+            .loginContainer {
+              padding: 25px;
+              padding-top: 120px;
+            }
+            .custom_background {
+              width: 100%;
+              background-image: url('../static/images/bg/loginBg2.png');
+              height: 100%;
+              background-size: cover;
+              position: fixed;
+            }
           }
          `}</style>
       </React.Fragment>
