@@ -1,7 +1,7 @@
 import React,{PureComponent} from 'react';
 import axios from 'axios';
 import { Col, Icon } from 'antd';
-
+const storage = 'https://penedge.sgp1.digitaloceanspaces.com';
 export default class UserTable extends PureComponent {
     constructor(props) {
         super(props)
@@ -28,18 +28,19 @@ export default class UserTable extends PureComponent {
         return (
             <React.Fragment>
                 <Col className="UserTable clearfix">
-                    <strong><h2 style={{ fontWeight: 'bold' }}><Icon type={'user'} style={{ marginRight: 10 }} />Admins | {active_user.length}</h2></strong>      
                     <div className="active_userContainer">
                         {
                             active_user.map((activeUser) => (
                                 <div className="userProfile">
-                                    <img src={`/static/images/admin/profile_image/${activeUser.image}`} alt={activeUser.image}/>
+                                    <img src={`${storage}/profile_image/${activeUser.image}`} alt={activeUser.image}/>
                                     <p style={{ textAlign: 'center' }}><strong>{activeUser.username}</strong></p>
                                 </div>
                             ))
                         }
                     </div>
                 </Col>
+                <br/>
+                <br/>
                 <style>{`
                     .clearfix {
                         clear:both;

@@ -4,21 +4,25 @@ const next = require('next');
 const dev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 80;
 // using in development
-//const app = next({ dev });
+const app = next({ dev });
 // using in production
-const app = next({ dir: '.' , dev: false, staticMarkup: false, quiet: false, conf: null, chunk:null, cache: true});
+//const app = next({ dir: '.', dev: false, staticMarkup: false, quiet: false, conf: null, chunk: null, cache: true });
 const handle = app.getRequestHandler();
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const compression = require('compression');
 const mongoose = require('mongoose');
+mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
+mongoose.set('useUnifiedTopology', true);
 // using in production
-//const connectServer = 'mongodb://penedgeAdmin:penedge1234@mongo:27017/penedgeDB1234';
+//const connectServer = 'mongodb://mongo:27017/penedgeDB1234';
 // using in testing code
-const connectServer = 'mongodb://happyudong:4234dong@localhost:27017/penedgeDB1234';
+const connectServer = 'mongodb://localhost:27017/penedgeDB1234';
 mongoose.connect(connectServer, { useNewUrlParser: true });
 const multer = require('multer');
+const aws = require('aws-sdk');
+const multerS3 = require('multer-s3');
 const jwt = require('jsonwebtoken');
 // API
 app.prepare().then(() => {
@@ -27,33 +31,55 @@ app.prepare().then(() => {
     server.use(compression());
     // setpermission
     server.use(cors({ origin: true }));
-    server.use(bodyParser.json());
-    server.use(bodyParser.urlencoded({ extended: true }));
+    server.use(bodyParser.json({ limit: '500mb' }));
+    server.use(bodyParser.urlencoded({ limit: '500mb', extended: true }));
     //Enabling CORS
     server.use((req, res, next) => {
         res.header("Access-Control-Allow-Origin", "*");
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.header("Access-Control-Allow-Methods", "PUT, POST, GET, OPTIONS, DELETE");
         next();
     });
+    const storageId = '6YIMOE2NFUHFLM6NXDNT';
+    const storageKey = 'pjpz0SX3q5q25o68fxE+z5lIi6gX+/jnTeczD2g5GNU';
+    const profileImageAPI = new aws.Endpoint('sgp1.digitaloceanspaces.com/profile_image/');
+    const contentAPI = new aws.Endpoint('sgp1.digitaloceanspaces.com/content/');
+    const adminProfile = new aws.S3({
+        endpoint: profileImageAPI,
+        accessKeyId: storageId,
+        secretAccessKey: storageKey
+    });
+    const adminContent = new aws.S3({
+        endpoint: contentAPI,
+        accessKeyId: storageId,
+        secretAccessKey: storageKey
+    });
     // determine upload folder
-    const userStorage = multer.diskStorage({
-        destination: function (req, file, cb) {
-            cb(null, __dirname + '/static/images/admin/profile_image/')
-        },
-        filename: function (req, file, cb) {
-            cb(null, file.originalname)
-        }
+    const uploadProfile = multer({
+        storage: multerS3({
+            s3: adminProfile,
+            bucket: 'penedge',
+            acl: 'public-read-write',
+            metadata: function (req, file, cb) {
+                cb(null, { fieldName: file.originalname });
+            },
+            key: function (req, file, cb) {
+                cb(null, file.originalname)
+            }
+        })
     });
-    const blogStorage = multer.diskStorage({
-        destination: function (req, file, cb) {
-            cb(null, __dirname + '/static/images/admin/content/')
-        },
-        filename: function (req, file, cb) {
-            cb(null, file.originalname)
-        }
+    const uploadPost = multer({
+        storage: multerS3({
+            s3: adminContent,
+            bucket: 'penedge',
+            acl: 'public-read-write',
+            metadata: function (req, file, cb) {
+                cb(null, { fieldName: file.originalname });
+            },
+            key: function (req, file, cb) {
+                cb(null, file.originalname)
+            }
+        })
     });
-    const uploadProfile = multer({ storage: userStorage });
-    const uploadPost = multer({ storage: blogStorage });
     // Schema
     const User = require('./static/schema/user.model');
     const Blog = require('./static/schema/blog.model');
@@ -64,11 +90,13 @@ app.prepare().then(() => {
         newUser.email = req.body.email;
         newUser.username = req.body.username;
         newUser.password = jwt.sign(req.body.password, req.body.username);
-        newUser.profileImage = req.file.originalname;
-        newUser.image = req.file.filename;
+        newUser.image = req.file.key;
         newUser.save((err, newUser) => {
             if (!err) {
-                res.redirect('/admin')
+                res.redirect('/')
+            }
+            else {
+                res.send(newUser)
             }
         });
     });
@@ -91,7 +119,7 @@ app.prepare().then(() => {
     });
     server.post('/login', (req, res) => {
         if (!req.body.username || !req.body.password) {
-            res.redirect('/admin')
+            res.redirect('/')
         }
         else {
             res.send(user);
@@ -104,18 +132,18 @@ app.prepare().then(() => {
     // Blog API
     server.post('/blog', uploadPost.fields([{ name: 'cover' }, { name: 'multiFile' }]), (req, res) => {
         const blog = new Blog();
-        blog.cover = req.files.originalname;
         blog.image = req.body.image;
         blog.title = req.body.title;
         blog.content = req.body.content;
         blog.author = req.body.author;
-        blog.category = req.body.category;
-        blog.multiFile = req.files.originalname;
+        blog.airlines = req.body.airlines;
+        blog.service = req.body.service;
+        blog.otherService = req.body.otherService;
         blog.albums = req.body.albums;
         blog.date = req.body.date;
         blog.save((err, newBlog) => {
             if (err) {
-                res.redirect('/admin')
+                res.redirect('/dashboard')
             }
             else {
                 res.send(newBlog)
@@ -127,7 +155,6 @@ app.prepare().then(() => {
         const id = req.params.id;
         Blog.findByIdAndUpdate({ _id: id }, {
             $set: {
-                cover: req.files.originalname,
                 image: req.body.image
             }
         }, (err, admin) => {
@@ -158,7 +185,17 @@ app.prepare().then(() => {
         const id = req.params.id;
         Blog.findByIdAndUpdate({ _id: id }, {
             $set: {
-                category: req.body.category
+                airlines: req.body.airlines
+            }
+        }, (err, admin) => {
+            res.send(admin);
+        });
+    });
+    server.put('/ChangeServiceBlog/:id', (req, res) => {
+        const id = req.params.id;
+        Blog.findByIdAndUpdate({ _id: id }, {
+            $set: {
+                service: req.body.service
             }
         }, (err, admin) => {
             res.send(admin);
@@ -167,7 +204,7 @@ app.prepare().then(() => {
     server.put('/ChangeAlbumsBlog/:id', uploadPost.fields([{ name: 'multiFile' }]), (req, res) => {
         const id = req.params.id;
         Blog.findByIdAndUpdate({ _id: id }, {
-            $set: {
+            $addToSet: {
                 multiFile: req.files.originalname,
                 albums: req.body.albums
             }
@@ -180,42 +217,27 @@ app.prepare().then(() => {
         const id = req.params.id;
         User.findByIdAndUpdate({ _id: id }, {
             $set: {
-                profileImage: req.files.originalname,
+                profileImage: req.files.key,
                 image: req.body.image
             }
         }, (err, updateInfo) => {
             if (err) {
-
+                res.redirect('/dashboard');
             }
             else {
                 res.send(updateInfo)
             }
         });
-    })
-    server.put('/changeUsername/:id', (req, res) => {
-        const id = req.params.id;
-        User.findByIdAndUpdate({ _id: id }, {
-            $set: {
-                username: req.body.username
-            }
-        }, (err, updateInfo) => {
-            if (err) {
-
-            }
-            else {
-                res.send(updateInfo)
-            }
-        });
-    })
+    });
     server.put('/changePassword/:id', (req, res) => {
         const id = req.params.id;
-        User.findByIdAndUpdate({ _id: id }, {
+        User.findOneAndUpdate({ _id: id }, {
             $set: {
                 password: jwt.sign(req.body.password, req.body.username)
             }
         }, (err, updateInfo) => {
             if (err) {
-
+                res.redirect('/dashboard');
             }
             else {
                 res.send(updateInfo)
@@ -228,7 +250,7 @@ app.prepare().then(() => {
         const author = req.params.author;
         Blog.find({ author }, (err, admin) => {
             if (err) {
-                res.redirect('/admin');
+                res.redirect('/dashboard');
             }
             else {
                 res.send(admin)
@@ -237,7 +259,7 @@ app.prepare().then(() => {
     });
     // query public
     server.get('/blog', (req, res) => {
-        mongoose.model('Blog').find().sort({ title: -1 }).exec((err, content) => {
+        mongoose.model('Blog').find().sort({ title: -req.body.title }).exec((err, content) => {
             if (err) {
                 res.status(404).send('404 NOT FOUND!')
             }
@@ -252,6 +274,20 @@ app.prepare().then(() => {
         Blog.findByIdAndDelete({ _id: id }, (err, admin) => {
             res.send(admin);
         });
+    })
+    // delete albums
+    server.delete('/deleteAlbums/:albums', (req, res) => {
+        const albums = req.params.albums;
+        Blog.updateOne({ $pull : { albums } }, (err, admin) => {
+            res.send(admin);
+        });
+    })
+    // clean URL
+    server.get('/detail/:id', (req, res) => {
+        const id = req.params.id;
+        Blog.find({ _id: id }, (err, admin) => {
+            res.send(admin);
+        }).limit(1);
     })
     // running server
     server.get('*', (req, res) => {

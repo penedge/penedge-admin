@@ -1,5 +1,5 @@
-import React, {PureComponent} from 'react'
-import { Form, Row, Col, Upload, Icon, Collapse } from 'antd'
+import React, { PureComponent } from 'react'
+import { Form, Row, Col, Upload, Icon, Collapse, Modal, notification } from 'antd'
 import axios from 'axios'
 import jwt from 'jsonwebtoken'
 const { Panel } = Collapse;
@@ -17,7 +17,7 @@ export default class ProfileSetting extends PureComponent {
         }
     }
     componentDidMount() {
-        this.setState({account: this.props.setting})
+        this.setState({ account: this.props.setting })
     }
     getBase64(img, callback) {
         const reader = new FileReader();
@@ -39,6 +39,21 @@ export default class ProfileSetting extends PureComponent {
                     fileName: info.file.name
                 }),
             );
+            const formData = new FormData();
+            formData.append('profileImage', info.file.originFileObj);
+            formData.append('image', info.file.originFileObj.name);
+            const config = {
+                headers: {
+                    'content-type': 'multipart/form-data'
+                }
+            }
+            axios.put(`/changeProfileImage/${this.state.account._id}`, formData, config).then((res) => {
+                notification.open({
+                    message: 'congrats',
+                    description: 'Change profile Successful',
+                    icon: <Icon type="picture" />,
+                });
+            });
         }
     };
     newUsername = (e) => {
@@ -73,8 +88,6 @@ export default class ProfileSetting extends PureComponent {
         }
     }
     saveChangePassword = (e) => {
-        e.preventDefault();
-        e.target.reset()
         if (this.state.loading === false && this.state.password === null) {
             e.target.reset()
         }
@@ -91,25 +104,6 @@ export default class ProfileSetting extends PureComponent {
             });
         }
     }
-    saveChaneProfile = (e) => {
-        e.preventDefault();
-        if (this.state.loadingImage === false && this.state.profileImage === null) {
-            
-        }
-        else {
-            const formData = new FormData();
-            formData.append('profileImage', this.state.profileImage);
-            formData.append('image', this.state.fileName);
-            const config = {
-                headers: {
-                    'content-type': 'multipart/form-data'
-                }
-            }
-            axios.put(`/changeProfileImage/${this.state.account._id}`, formData, config).then((res) => {
-                
-            });
-        }
-    }
     render() {
         const uploadButton = (
             <div>
@@ -120,58 +114,50 @@ export default class ProfileSetting extends PureComponent {
         const { imageUrl } = this.state;
         return (
             <React.Fragment>
-                <div className="ProfileSettingContainer">
-                    <h2><strong>Profile Setting</strong></h2>
-                    <br />
-                    <form>
-                        <div className="clearfix">
-                            <Row gutter={16}>
-                                <div className="clearfix">
-                                    <Col md={{span:8}}>
-                                        <Collapse className="custom-border" bordered={false} showArrow={true}>
-                                            <Panel showArrow={false} header={<span><Icon style={{ marginRight: 10, fontSize: 18 }} type={'picture'} /><span style={{ textTransform: 'capitalize' }}>Change Profile</span><Icon className="customDrop_downIcon" type="caret-down" /></span>} key="1">
-                                                <Form onSubmit={this.saveChaneProfile} form={this.props.form}>
-                                                    <div className="UploadContainer">
-                                                        <Upload
-                                                            name="avatar"
-                                                            listType="picture-card"
-                                                            className="ediUploadProfile"
-                                                            showUploadList={false}
-                                                            action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
-                                                            onChange={this.newProfile}
-                                                        >
-                                                            {imageUrl ? <img src={imageUrl} className="changeProfile" /> : uploadButton}
-                                                        </Upload>
-                                                    </div>
-                                                    <button className="save custom-buttonSave" type="submit">Save Change</button>
-                                                </Form>
-                                            </Panel>
-                                        </Collapse>
-                                    </Col>
-                                    <Col md={{span:8}}>
-                                        <Collapse className="custom-border" bordered={false} showArrow={true}>
-                                            <Panel showArrow={false} header={<span><Icon style={{ marginRight: 10, fontSize: 18 }} type={'user'} /><span style={{ textTransform: 'capitalize' }}>Change username</span><Icon className="customDrop_downIcon" type="caret-down" /></span>} key="2">
-                                                <form id="ChangeUsername" className="editContainer" onSubmit={this.saveChangeUsername}>
-                                                    <input className="ChangeForm" placeholder={'Change your username'} onChange={this.newUsername} style={{ marginBottom: 20 }} />
-                                                    <button className="save" type="submit">Save Change</button>
-                                                </form>
-                                            </Panel>
-                                        </Collapse>
-                                    </Col>
-                                    <Col md={{span:8}}>
-                                        <Collapse className="custom-border" bordered={false} showArrow={true}>
-                                            <Panel showArrow={false} header={<span><Icon style={{ marginRight: 10, fontSize: 18 }} type={'lock'} /><span style={{ textTransform: 'capitalize' }}>Change password</span><Icon className="customDrop_downIcon" type="caret-down" /></span>} key="3">
-                                                <form className="editContainer" onSubmit={this.saveChangePassword}>
-                                                    <input className="ChangeForm" type="password" placeholder={'Change your password'} onChange={this.newPassword} style={{ marginBottom: 20 }} />
-                                                    <button className="save" type="submit">Save Change</button>
-                                                </form>
-                                            </Panel>
-                                        </Collapse>
-                                    </Col>
-                                </div>
-                            </Row>
-                        </div>
-                    </form>
+                <div>
+                    <Modal visible={this.props.modal_load} className="ProfileSettingContainer" footer={null} closable={false}>
+                        <h2><strong>Profile Setting</strong></h2>
+                        <br />
+                        <form onSubmit={this.saveChangePassword}>
+                            <div className="clearfix">
+                                <Row gutter={16}>
+                                    <div className="clearfix">
+                                        <Col md={{ span: 12 }}>
+                                            <Collapse className="custom-border" bordered={false} showArrow={true}>
+                                                <Panel showArrow={false} header={<span><Icon style={{ marginRight: 10, fontSize: 18 }} type={'picture'} /><span style={{ textTransform: 'capitalize' }}>Change Profile</span><Icon className="customDrop_downIcon" type="caret-down" /></span>} key="1">
+                                                    <Form onSubmit={this.saveChaneProfile} form={this.props.form}>
+                                                        <div className="UploadContainer">
+                                                            <Upload
+                                                                name="avatar"
+                                                                listType="picture-card"
+                                                                className="ediUploadProfile"
+                                                                showUploadList={false}
+                                                                action="https://www.mocky.io/v2/5cc8019d300000980a055e76"
+                                                                onChange={this.newProfile}
+                                                            >
+                                                                {imageUrl ? <img src={imageUrl} className="changeProfile" /> : uploadButton}
+                                                            </Upload>
+                                                        </div>
+                                                    </Form>
+                                                </Panel>
+                                            </Collapse>
+                                        </Col>
+                                        <Col md={{ span: 12 }}>
+                                            <Collapse className="custom-border" bordered={false} showArrow={true}>
+                                                <Panel showArrow={false} header={<span><Icon style={{ marginRight: 10, fontSize: 18 }} type={'lock'} /><span style={{ textTransform: 'capitalize' }}>Change password</span><Icon className="customDrop_downIcon" type="caret-down" /></span>} key="3">
+                                                    <form className="editContainer">
+                                                        <input className="ChangeForm" type="password" placeholder={'Change your password'} onChange={this.newPassword} style={{ marginBottom: 20 }} />
+                                                    </form>
+                                                </Panel>
+                                            </Collapse>
+                                        </Col>
+                                    </div>
+                                </Row>
+                                <button className="save" type="submit">Save all setting</button>
+                                <button style={{ width: '100%', height: 35, marginTop: 20, cursor: 'pointer', border: '1px solid' }} type="submit">Cancel</button>
+                            </div>
+                        </form>
+                    </Modal>
                 </div>
                 <style>{`
                     .clearfix {
@@ -193,14 +179,13 @@ export default class ProfileSetting extends PureComponent {
                         top: 5px;
                     }
                     .editContainer {
-                        padding: 30px;
-                        background-color: #001528;
+                        padding: 0;
                     }
                     .custom-buttonSave {
                         margin-top: 15px;
                     }
                     .save {
-                        font-size: 11.3px;
+                        width: 100%;
                         height: 35px;
                         border: 0;
                         border-radius: 4px;
@@ -231,7 +216,7 @@ export default class ProfileSetting extends PureComponent {
                         height: 35px;
                         padding: 4px 11px;
                         border-radius: 4px;
-                        border: 0;
+                        border: 1px solid #eee;
                     }
                     @media screen and (min-width:320px) and (max-width: 420px) {
                         .ProfileSettingContainer {

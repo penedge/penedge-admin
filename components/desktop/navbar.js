@@ -1,6 +1,7 @@
 import React, {PureComponent} from 'react'
 import { Layout, Menu } from 'antd'
 const { Header } = Layout;
+const storage = 'https://penedge.sgp1.digitaloceanspaces.com';
 export default class Navbar extends PureComponent {
     constructor(props) {
         super(props)
@@ -15,7 +16,7 @@ export default class Navbar extends PureComponent {
                 <Header className="header custom-header">
                     <div className="logo">
                         <a href={'/dashboard'}>
-                            {!this.state.loading && <img src={`/static/logo/penedgeLogo.png`} alt="penedge logo" />}
+                            <img src={`https://penedge.sgp1.digitaloceanspaces.com/asset/penedgeLogo.png`} alt="penedge logo" />
                         </a>
                     </div>
                     <Menu
@@ -28,7 +29,7 @@ export default class Navbar extends PureComponent {
                         </Menu.Item>
                         <Menu.Item key="2" style={{ backgroundColor: 'transparent' }}>
                             <div className="avatar">
-                            {!this.state.loading && <img src={`/static/images/admin/profile_image/${admin.image}`} alt={`profile : ${admin.username}`} />}
+                            {!this.state.loading && <img src={`${storage}/profile_image/${admin.image}`} alt={`profile : ${admin.username}`} />}
                             </div>
                         </Menu.Item>
                     </Menu>
