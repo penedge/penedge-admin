@@ -1,5 +1,5 @@
-import React, {PureComponent} from 'react';
-import { Upload, Icon, Select, notification } from 'antd'
+import React, { PureComponent } from 'react';
+import { Upload, Icon, Select, notification, Input } from 'antd'
 import axios from 'axios'
 export default class Edit_post extends PureComponent {
     constructor(props) {
@@ -77,7 +77,37 @@ export default class Edit_post extends PureComponent {
             hashtag: null,
             albums: [],
             multiFile: [],
-            selectedItems: []
+            selectedItems: [],
+            bankAccount_name: [],
+            bank_name: [,
+                {
+                    id: 1,
+                    name: "KBANK"
+                },
+                {
+                    id: 2,
+                    name: "SCB"
+                },
+                {
+                    id: 3,
+                    name: "Bangkok Bank"
+                },
+                {
+                    id: 4,
+                    name: "Krung Thai Bank"
+                },
+                {
+                    id: 5,
+                    name: "Krungsri"
+                },
+                {
+                    id: 6,
+                    name: "UOB"
+                }
+            ],
+            selectted_banks: [],
+            bankAccount: [],
+            price: []
         };
     }
     componentDidMount() {
@@ -120,9 +150,9 @@ export default class Edit_post extends PureComponent {
                     description: 'saved Successful',
                     icon: <Icon type="picture" />,
                 });
-                setTimeout(()=> {
+                setTimeout(() => {
                     window.location.reload()
-                },1000)
+                }, 1000)
             });
         }
     }
@@ -154,10 +184,10 @@ export default class Edit_post extends PureComponent {
             }
         }
         for (let j = 0; j < this.state.multiFile.length; j++) {
-            var {percent} = this.state.multiFile[j];
+            var { percent } = this.state.multiFile[j];
         }
         axios.put(`/ChangeAlbumsBlog/${this.props.id}`, formData, config).then((res) => {
-            setTimeout(()=> {
+            setTimeout(() => {
                 if (percent === 100) {
                     notification.open({
                         message: 'congrats',
@@ -178,6 +208,26 @@ export default class Edit_post extends PureComponent {
             content: e.target.value
         });
     }
+    bankAccount = (e) => {
+        this.setState({
+            bankAccount: e.target.value
+        })
+    }
+    price = (e) => {
+        this.setState({
+            price: e.target.value
+        })
+    }
+    bankAccount_name = (e) => {
+        this.setState({
+            bankAccount_name: e.target.value
+        })
+    }
+    selected_Bank = (selectted_banks) => {
+        this.setState({
+            selectted_banks
+        })
+    }
     publish = (e) => {
         e.preventDefault();
         const data = {
@@ -186,27 +236,52 @@ export default class Edit_post extends PureComponent {
         }
         //Change Title
         axios.put(`/ChangeTitleBlog/${this.props.id}`, data).then((res) => {
-            
+
         });
         //Change Content
         axios.put(`/ChangeContentBlog/${this.props.id}`, data).then((res) => {
 
         });
         // Change category
-        const select = {
-            category: (this.state.selectedItems)
+        const box = [];
+        for (let i = 0; i < this.state.selectedItems.length; i++) {
+            const categories = Object.assign(this.state.selectedItems[i] + "\n");
+            box.push(categories);
         }
-        axios.put(`/ChangeCategoryBlog/${this.props.id}`, select).then((res) => {
-
+        const category = {
+            category: box
+        }
+        axios.put(`/ChangeCategoryBlog/${this.props.id}`, category).then((res) => {
+        });
+        const ChangebankAccount_name = {
+            bankAccount_name: this.state.bankAccount_name
+        }
+        axios.put(`/ChangebankAccount_name/${this.props.id}`, ChangebankAccount_name).then((res) => {
+        });
+        const bank = {
+            bankAccount: this.state.bankAccount
+        }
+        axios.put(`/ChangeBankAccount/${this.props.id}`, bank).then((res) => {
+        });
+        const newPrice = {
+            price: this.state.price
+        }
+        axios.put(`/ChangePrice/${this.props.id}`, newPrice).then((res) => {
+        });
+        //ChangeBank
+        const ChangeBank = {
+            selectted_banks: this.state.selectted_banks
+        }
+        axios.put(`/ChangeBank/${this.props.id}`, ChangeBank).then((res) => {
         });
         notification.open({
             message: 'congrats',
             description: 'Edit you blog successful',
             icon: <Icon type="form" />,
         });
-        setTimeout(()=> {
+        setTimeout(() => {
             window.location.reload();
-        },1000);
+        }, 1000);
     }
     render() {
         const uploadButton = (
@@ -217,13 +292,13 @@ export default class Edit_post extends PureComponent {
         );
         const albumsButton = (
             <div>
-                <Icon style={{ marginBottom: 14, fontSize: 43}}
+                <Icon style={{ marginBottom: 14, fontSize: 43 }}
                     type="picture" />
                 <div className="ant-upload-text">Albums</div>
             </div>
         );
         const { preview } = this.state;
-        const { selectedItems, multiFile } = this.state;
+        const { selectedItems, multiFile,selectted_banks, bank_name } = this.state;
         return (
             <div>
                 <form onSubmit={this.publish}>
@@ -266,7 +341,33 @@ export default class Edit_post extends PureComponent {
                                 ))
                             }
                         </Select>
-                        <button className="PublishSaved" type="submit">Publish</button>
+                        <h3>Select Bank</h3>
+                        <Select
+                            style={{ width: 300, marginBottom: 20 }}
+                            placeholder="Selected BANKS"
+                            value={selectted_banks}
+                            onChange={this.selected_Bank}
+                            showArrow={false}>
+                            {
+                                Object.values(bank_name).map((item) => (
+                                    <Select.Option key={item.id} value={item.name}>
+                                        {item.name}
+                                    </Select.Option>
+                                ))
+                            }
+                        </Select>
+                        <h3>Account name</h3>
+                        <Input prefix={<Icon type="user" />} style={{ width: 300, marginBottom: 20 }} onChange={this.bankAccount_name.bind(this)} placeholder={'ACCOUNT NAME'} />
+                        <br />
+                        <h3>Add bank account</h3>
+                        <Input type="password" prefix={<Icon type="bank" />} style={{ width: 300 }} onChange={this.bankAccount.bind(this)} placeholder={'BANK ACCOUNT NUMBERS'} />
+                        <br />
+                        <br />
+                        <h3>Add Price</h3>
+                        <Input style={{ width: 300,marginBottom:25 }} placeholder={'Add Price here'} onChange={this.price.bind(this)} suffix="THB" />
+                        <div className="clearfix">
+                            <button className="PublishSaved" type="submit">Publish</button>
+                        </div>
                     </div>
                 </form>
                 <style>{`

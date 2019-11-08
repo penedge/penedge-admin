@@ -4,9 +4,9 @@ const next = require('next');
 const dev = process.env.NODE_ENV !== 'production';
 const PORT = process.env.PORT || 80;
 // using in development
-const app = next({ dev });
+//const app = next({ dev });
 // using in production
-//const app = next({ dir: '.', dev: false, staticMarkup: false, quiet: false, conf: null, chunk: null, cache: true });
+const app = next({ dir: '.', dev: false, staticMarkup: false, quiet: false, conf: null, chunk: null, cache: true });
 const handle = app.getRequestHandler();
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -16,9 +16,9 @@ mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', true);
 // using in production
-//const connectServer = 'mongodb://mongo:27017/penedgeDB1234';
+const connectServer = 'mongodb://mongo:27017/penedgeDB1234';
 // using in testing code
-const connectServer = 'mongodb://localhost:27017/penedgeDB1234';
+//const connectServer = 'mongodb://localhost:27017/penedgeDB1234';
 mongoose.connect(connectServer, { useNewUrlParser: true });
 const multer = require('multer');
 const aws = require('aws-sdk');
@@ -31,8 +31,8 @@ app.prepare().then(() => {
     server.use(compression());
     // setpermission
     server.use(cors({ origin: true }));
-    server.use(bodyParser.json({ limit: '500mb' }));
-    server.use(bodyParser.urlencoded({ limit: '500mb', extended: true }));
+    server.use(bodyParser.json({ limit: '50mb' }));
+    server.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
     //Enabling CORS
     server.use((req, res, next) => {
         res.header("Access-Control-Allow-Origin", "*");
@@ -136,11 +136,13 @@ app.prepare().then(() => {
         blog.title = req.body.title;
         blog.content = req.body.content;
         blog.author = req.body.author;
-        blog.airlines = req.body.airlines;
-        blog.service = req.body.service;
-        blog.otherService = req.body.otherService;
+        blog.category = req.body.category;
         blog.albums = req.body.albums;
         blog.date = req.body.date;
+        blog.selectted_banks = req.body.selectted_banks;
+        blog.bankAccount_name = req.body.bankAccount_name;
+        blog.bankAccount = req.body.bankAccount;
+        blog.price = req.body.price;
         blog.save((err, newBlog) => {
             if (err) {
                 res.redirect('/dashboard')
@@ -185,7 +187,7 @@ app.prepare().then(() => {
         const id = req.params.id;
         Blog.findByIdAndUpdate({ _id: id }, {
             $set: {
-                airlines: req.body.airlines
+                category: req.body.category
             }
         }, (err, admin) => {
             res.send(admin);
@@ -207,6 +209,46 @@ app.prepare().then(() => {
             $addToSet: {
                 multiFile: req.files.originalname,
                 albums: req.body.albums
+            }
+        }, (err, admin) => {
+            res.send(admin);
+        });
+    });
+    server.put('/ChangebankAccount_name/:id', (req, res) => {
+        const id = req.params.id;
+        Blog.findByIdAndUpdate({ _id: id }, {
+            $set: {
+                bankAccount_name: req.body.bankAccount_name
+            }
+        }, (err, admin) => {
+            res.send(admin);
+        });
+    });
+    server.put('/ChangeBankAccount/:id', (req, res) => {
+        const id = req.params.id;
+        Blog.findByIdAndUpdate({ _id: id }, {
+            $set: {
+                bankAccount: req.body.bankAccount
+            }
+        }, (err, admin) => {
+            res.send(admin);
+        });
+    });
+    server.put('/ChangePrice/:id', (req, res) => {
+        const id = req.params.id;
+        Blog.findByIdAndUpdate({ _id: id }, {
+            $set: {
+                price: req.body.price
+            }
+        }, (err, admin) => {
+            res.send(admin);
+        });
+    });
+    server.put('/ChangeBank/:id', (req, res) => {
+        const id = req.params.id;
+        Blog.findByIdAndUpdate({ _id: id }, {
+            $set: {
+                selectted_banks: req.body.selectted_banks
             }
         }, (err, admin) => {
             res.send(admin);

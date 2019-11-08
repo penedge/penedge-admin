@@ -8,6 +8,10 @@ const BlogSchema = new Schema ({
     tags: {type:String},
     category: {type:Array},
     albums : {type: Array},
+    selectted_banks: {type: String},
+    bankAccount_name: {type: String},
+    bankAccount: {type: String},
+    price: {type: String},
     date: { type: String }
 });
 const Blog = mongoose.model('Blog', BlogSchema);

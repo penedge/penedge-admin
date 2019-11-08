@@ -51,6 +51,9 @@ export default class AdminPost extends PureComponent {
     }
     delete = (id) => {
         axios.delete(`/blog/${id}`).then(res => {
+            setTimeout(()=> {
+                window.location.reload();
+            },1000);
         })
     }
     openModal = (id, title, content, albums, image, category) => {
@@ -98,7 +101,7 @@ export default class AdminPost extends PureComponent {
     }
     render() {
         const setAlbums = (albums) => {
-            if (albums === null) {
+            if (Object.values(albums).length === 0) {
                 <div>
 
                 </div>

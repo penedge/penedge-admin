@@ -1,8 +1,9 @@
-import React, {PureComponent} from 'react'
+import React, { PureComponent } from 'react'
 import axios from 'axios'
 import jwt from 'jsonwebtoken'
-import { Icon, Tabs, Upload, Select, Card, Col, Row, Skeleton, notification } from 'antd'
+import { Icon, Tabs, Upload, Select, Card, Col, TreeSelect, Skeleton, notification, Input } from 'antd'
 const { TabPane } = Tabs;
+const { Option, OptGroup } = Select;
 export default class Editor extends PureComponent {
     constructor(props) {
         super(props)
@@ -78,7 +79,37 @@ export default class Editor extends PureComponent {
             selectedItems: [],
             hashtag: null,
             multiFile: [],
-            percent: 0
+            percent: 0,
+            bankAccount_name: [],
+            bank_name: [,
+                {
+                    id: 1,
+                    name: "KBANK"
+                },
+                {
+                    id: 2,
+                    name: "SCB"
+                },
+                {
+                    id: 3,
+                    name: "Bangkok Bank"
+                },
+                {
+                    id: 4,
+                    name: "Krung Thai Bank"
+                },
+                {
+                    id: 5,
+                    name: "Krungsri"
+                },
+                {
+                    id: 6,
+                    name: "UOB"
+                }
+            ],
+            selectted_banks: [],
+            bankAccount: [],
+            price: []
         }
     }
     title = (e) => {
@@ -127,6 +158,26 @@ export default class Editor extends PureComponent {
             albumsLoad: info.file.percent
         })
     }
+    bankAccount = (e) => {
+        this.setState({
+            bankAccount: e.target.value
+        })
+    }
+    price = (e) => {
+        this.setState({
+            price: e.target.value
+        })
+    }
+    bankAccount_name = (e) => {
+        this.setState({
+            bankAccount_name: e.target.value
+        })
+    }
+    selected_Bank = (selectted_banks) => {
+        this.setState({
+            selectted_banks
+        })
+    }
     // submit form
     submit = (e) => {
         e.preventDefault();
@@ -139,6 +190,10 @@ export default class Editor extends PureComponent {
         formData.append('title', this.state.title);
         formData.append('content', this.state.content);
         formData.append('author', getToken.username);
+        formData.append('selectted_banks', this.state.selectted_banks);
+        formData.append('bankAccount_name', this.state.bankAccount_name);
+        formData.append('bankAccount', this.state.bankAccount);
+        formData.append('price', this.state.price);
         const date = new Date();
         const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const times = (date.getDate() + ' ' + months[date.getMonth()] + ' ' + date.getFullYear());
@@ -155,6 +210,15 @@ export default class Editor extends PureComponent {
         for (let j = 0; j < newAlbums.length; j++) {
             formData.append('albums', newAlbums[j].photo)
         }
+        let newCategory = [];
+        for (let k = 0; k < this.state.selectedItems.length; k++) {
+            let selected = (this.state.selectedItems[k], { category: this.state.selectedItems[k] });
+            newCategory.push(selected);
+        }
+        for (let j = 0; j < newCategory.length; j++) {
+            const categories = Object.assign(newCategory[j].category + "\n")
+            formData.append('category', categories)
+        }
         const config = {
             headers: {
                 'content-type': 'multipart/form-data'
@@ -170,14 +234,6 @@ export default class Editor extends PureComponent {
                 window.location.reload();
             }, 1100)
         })
-        let newCategory = [];
-        for (let k = 0; k < this.state.selectedItems.length; k++) {
-            let selected = (this.state.selectedItems[k], { category: this.state.selectedItems[k] });
-            newCategory.push(selected);
-        }
-        for (let j = 0; j < newCategory.length; j++) {
-            formData.append('category', newCategory[j].category)
-        }
     }
     render() {
         const uploadButton = (
@@ -188,12 +244,12 @@ export default class Editor extends PureComponent {
         );
         const albumsButton = (
             <div>
-                <Icon style={{ marginBottom: 14, fontSize: 33}}
+                <Icon style={{ marginBottom: 14, fontSize: 33 }}
                     type="picture" />
                 <div className="ant-upload-text">picture</div>
             </div>
         )
-        const { preview } = this.state;
+        const { preview, bank_name, selectted_banks } = this.state;
         const { selectedItems, multiFile } = this.state;
         return (
             <React.Fragment>
@@ -255,8 +311,37 @@ export default class Editor extends PureComponent {
                                 <br />
                             </TabPane>
                             <TabPane tab={<span style={{ fontSize: 18, marginRight: 13 }}>
-                                <Icon type="align-left" /> Tags
+                                <Icon type="pay-circle" /> Add Price
                             </span>} key="4">
+                                <h3>Select Bank</h3>
+                                <Select
+                                    style={{width: 300}}
+                                    placeholder="Selected BANKS"
+                                    value={selectted_banks}
+                                    onChange={this.selected_Bank}
+                                    showArrow={false}>
+                                    {
+                                        Object.values(bank_name).map((item) => (
+                                            <Select.Option key={item.id} value={item.name}>
+                                                {item.name}
+                                            </Select.Option>
+                                        ))
+                                    }
+                                </Select>
+                                <br/>
+                                <h3>Account name</h3>
+                                <Input prefix={<Icon type="user" />} style={{ width: 300, marginBottom: 20 }} onChange={this.bankAccount_name.bind(this)} placeholder={'ACCOUNT NAME'} />
+                                <br />
+                                <h3>Add bank account</h3>
+                                <Input type="password" prefix={<Icon type="bank" />} style={{ width: 300 }} onChange={this.bankAccount.bind(this)} placeholder={'BANK ACCOUNT NUMBERS'} />
+                                <br />
+                                <br />
+                                <h3>Add Price</h3>
+                                <Input style={{ width: 300 }} placeholder={'Add Price here'} onChange={this.price.bind(this)} suffix="THB" />
+                            </TabPane>
+                            <TabPane tab={<span style={{ fontSize: 18, marginRight: 13 }}>
+                                <Icon type="align-left" /> Add Tags
+                            </span>} key="5">
                                 <br />
                                 <h3>Select Category</h3>
                                 <br />
@@ -374,6 +459,13 @@ export default class Editor extends PureComponent {
                     }
                     .imageLoad {
                         width: 200px;
+                    }
+                    .selectBank {
+                        width: 300px;
+                        height: 32px;
+                        background-color: #fff;
+                        border: 1px solid #d9d9d9;
+                        margin-bottom: 20px;
                     }
                  `}
                 </style>

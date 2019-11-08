@@ -1,9 +1,9 @@
 {
   "name": "create-next-example-app",
   "scripts": {
-    "dev": "node server.js",
+    "dev": "pm2-runtime server.js -i max",
     "build": "next build",
-    "start": "NODE_ENV=production node server.js"
+    "start": "NODE_ENV=production pm2-runtime server.js -i max"
   },
   "dependencies": {
     "@zeit/next-css": "^1.0.1",

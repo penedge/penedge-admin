@@ -1,16 +1,17 @@
 FROM node:10.16.3
-
+  
 # Create app directory
-RUN mkdir -p /admin
-WORKDIR /admin
+RUN mkdir -p /usr/src/adminDashboard
+WORKDIR /usr/src/adminDashboard
 
 # Install app dependencies
-COPY package.json /admin/
+COPY package.json /usr/src/adminDashboard
 RUN yarn install
-RUN yarn build
+RUN yarn add global pm2 -g
 
 # Bundle app source
-COPY . ./
+COPY . .
+RUN yarn build
 
 EXPOSE 80
 CMD [ "yarn", "dev" ]
