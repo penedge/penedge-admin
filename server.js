@@ -16,9 +16,9 @@ mongoose.set('useFindAndModify', false);
 mongoose.set('useCreateIndex', true);
 mongoose.set('useUnifiedTopology', true);
 // using in production
-const connectServer = 'mongodb://mongo:27017/penedgeDB1234';
+//const connectServer = 'mongodb://mongo:27017/penedgeDB1234';
 // using in testing code
-//const connectServer = 'mongodb://localhost:27017/penedgeDB1234';
+const connectServer = 'mongodb://localhost:27017/penedgeDB1234';
 mongoose.connect(connectServer, { useNewUrlParser: true });
 const multer = require('multer');
 const aws = require('aws-sdk');
